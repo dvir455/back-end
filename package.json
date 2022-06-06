@@ -1,0 +1,15 @@
+{
+  "name": "back-end",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon --ignore \"./data\" server.js"
+  },
+  "author": "Dvir Yomtovian",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.1"
+  }
+}
