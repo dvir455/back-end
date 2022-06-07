@@ -2,11 +2,12 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const postService = require("./services/posts.service");
 const usersService = require("./services/users.service");
-const config = require("./config.js");
+
+// const config = require("./config.js");
 const app = express();
 const cors = require("cors");
-const Cryptr = require("cryptr");
-const cryptr = new Cryptr(config.cryptrSecret);
+// const Cryptr = require("cryptr");
+// const cryptr = new Cryptr(config.cryptrSecret);
 
 // Config the Express App
 // app.use(express.static('public'))
@@ -14,14 +15,15 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
+const {auth} = usersService
+
 app.post("/api/user/login", async (req, res) => {
   const { username, password } = req.body;
   try {
-    const foundUser = await usersService.login(username, password);
+    const userToken = await usersService.login(username, password);
     // if (!foundUser) res.status(404).send("User not Found");
-    const encryptedString = cryptr.encrypt(foundUser);
-    res.cookie("loginInfo", encryptedString);
-    res.send(foundUser);
+    res.cookie("loginInfo", userToken);
+    res.send("Login Success");
   } catch (err) {
     res.send(err.message);
   }
@@ -50,13 +52,21 @@ app.post("/api/posts/:postId", (req, res) => {
       res.status(502).send(err);
     });
 });
-app.post("/api/posts/:postId/like", (req, res) => {
-  const { postId } = req.params;
-  const { userId } = req.body;
+app.post("/api/posts/:postId/like", auth,(req, res) => {
+  // const { postId } = req.params;
+  const { postId } = req.body;
   // const { userId } = req.cookies;
   // if (!userId) return res.status(401).send('Cannot add car')
+  const { user } = req;
   postService
-    .likePost(req.body)
+    .likePost({
+      postId,
+      likeInfo: {
+        _id: user._id,
+        fullname: user.name,
+        imgUrl: user.profilePic,
+      }
+    })
     .then((likeStatus) => {
       res.send(likeStatus);
     })

@@ -38,14 +38,15 @@ function deleteComment(postId, commentId) {
 }
 
 function likePost(request) {
-  const { postId, userId, likeInfo } = request;
+  const { postId, likeInfo } = request;
   console.log("request", request);
   const post = gPosts.find((post) => {
     return post._id == postId;
   });
   if (!post) return Promise.reject("Post not found");
-  const liked = post.likedBy.find((like) => like._id == userId);
-  const likeIdx = post.likedBy.findIndex((like) => like._id == userId);
+  //TODO CHANGE TO _userId
+  const liked = post.likedBy.find((like) => like._id == likeInfo._id);
+  const likeIdx = post.likedBy.findIndex((like) => like._id == likeInfo._id);
   if (liked) {
     post.likedBy.splice(post.likedBy.indexOf(liked), 1);
   } else {
