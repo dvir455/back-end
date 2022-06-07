@@ -1,5 +1,7 @@
 const fs = require('fs');
 const gPosts = require('../data/posts.json');
+const gUsers = require('../data/users.json');
+
 
 module.exports = {
   query,
