@@ -1,7 +1,5 @@
-const fs = require('fs');
-const gPosts = require('../data/posts.json');
-const gUsers = require('../data/users.json');
-
+const fs = require("fs");
+const gPosts = require("../data/posts.json");
 
 module.exports = {
   query,
@@ -22,18 +20,18 @@ function query(filterBy) {
 
 function addComment(postId, comment) {
   const post = gPosts.find((post) => post._id == postId);
-  if (!post) return Promise.reject('Post not found');
-  console.log('comment', comment);
+  if (!post) return Promise.reject("Post not found");
+  console.log("comment", comment);
   post.comments.push(comment);
   return Promise.resolve({ postId, comment });
 }
 function deleteComment(postId, commentId) {
   const post = gPosts.find((post) => post._id == postId);
-  if (!post) return Promise.reject('Post not found');
+  if (!post) return Promise.reject("Post not found");
   const commentIdx = post.comments.findIndex(
     (comment) => comment.id == commentId
   );
-  if (commentIdx < 0) return Promise.reject('Comment not found');
+  if (commentIdx < 0) return Promise.reject("Comment not found");
   // console.log('comment', comment);
   post.comments.splice(commentIdx, 1);
   return Promise.resolve({ postId, commentIdx });
@@ -41,11 +39,11 @@ function deleteComment(postId, commentId) {
 
 function likePost(request) {
   const { postId, userId, likeInfo } = request;
-  console.log('request', request);
+  console.log("request", request);
   const post = gPosts.find((post) => {
     return post._id == postId;
   });
-  if (!post) return Promise.reject('Post not found');
+  if (!post) return Promise.reject("Post not found");
   const liked = post.likedBy.find((like) => like._id == userId);
   const likeIdx = post.likedBy.findIndex((like) => like._id == userId);
   if (liked) {
@@ -81,8 +79,8 @@ function getById(postId) {
 
 function _makeId(length = 5) {
   const possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var txt = '';
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var txt = "";
   for (let i = 0; i < length; i++) {
     txt += possible.charAt(Math.floor(Math.random() * possible.length));
   }
@@ -91,12 +89,12 @@ function _makeId(length = 5) {
 
 function _savePostsToFile() {
   return new Promise((resolve, reject) => {
-    fs.writeFile('data/posts.json', JSON.stringify(gPosts, null, 2), (err) => {
+    fs.writeFile("data/posts.json", JSON.stringify(gPosts, null, 2), (err) => {
       if (err) {
         console.log(err);
-        reject('Cannot write to file');
+        reject("Cannot write to file");
       } else {
-        console.log('Wrote Successfully!');
+        console.log("Wrote Successfully!");
         resolve();
       }
     });

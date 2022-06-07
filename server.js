@@ -1,8 +1,12 @@
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const postService = require('./services/posts.service');
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const postService = require("./services/posts.service");
+const usersService = require("./services/users.service");
+const config = require("./config.js");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
+const Cryptr = require("cryptr");
+const cryptr = new Cryptr(config.cryptrSecret);
 
 // Config the Express App
 // app.use(express.static('public'))
@@ -10,12 +14,29 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
-app.get('/api/posts', (req, res) => {
-  const filterBy = { userId: req.query.userId || '' };
+app.post("/api/user/login", async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const foundUser = await usersService.login(username, password);
+    // if (!foundUser) res.status(404).send("User not Found");
+    const encryptedString = cryptr.encrypt(foundUser);
+    res.cookie("loginInfo", encryptedString);
+    res.send(foundUser);
+  } catch (err) {
+    res.send(err.message);
+  }
+});
+
+app.get("/api/user/logout", (req, res) => {
+  res.clearCookie("loginInfo").send("Logged Out");
+});
+
+app.get("/api/posts", (req, res) => {
+  const filterBy = { userId: req.query.userId || "" };
   postService.query(filterBy).then((posts) => res.send(posts));
 });
 
-app.post('/api/posts/:postId', (req, res) => {
+app.post("/api/posts/:postId", (req, res) => {
   const { postId } = req.params;
   const comment = req.body;
   // const { userId } = req.cookies;
@@ -29,7 +50,7 @@ app.post('/api/posts/:postId', (req, res) => {
       res.status(502).send(err);
     });
 });
-app.post('/api/posts/:postId/like', (req, res) => {
+app.post("/api/posts/:postId/like", (req, res) => {
   const { postId } = req.params;
   const { userId } = req.body;
   // const { userId } = req.cookies;
@@ -44,7 +65,7 @@ app.post('/api/posts/:postId/like', (req, res) => {
     });
 });
 
-app.delete('/api/posts/:postId/:commentId', (req, res) => {
+app.delete("/api/posts/:postId/:commentId", (req, res) => {
   const { postId } = req.params;
   const { commentId } = req.params;
   // const { userId } = req.cookies;
@@ -69,7 +90,7 @@ app.delete('/api/posts/:postId/:commentId', (req, res) => {
 //         })
 // })
 
-app.get('/api/posts/:postId', (req, res) => {
+app.get("/api/posts/:postId", (req, res) => {
   const { postId } = req.params;
   postService.getById(postId).then((post) => {
     res.send(post);
@@ -86,4 +107,4 @@ app.get('/api/posts/:postId', (req, res) => {
 // })
 
 app.listen(3030);
-console.log('Server is ready at 3030');
+console.log("Server is ready at 3030");
