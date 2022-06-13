@@ -1,44 +1,55 @@
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const postService = require("./services/posts.service");
-const usersService = require("./services/users.service");
-
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const postService = require('./services/posts.service');
+const usersService = require('./services/users.service');
+const corsOptions = {
+  origin: [
+    'http://127.0.0.1:3030',
+    'http://localhost:3030',
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+  ],
+  credentials: true,
+};
 // const config = require("./config.js");
 const app = express();
-const cors = require("cors");
-// const Cryptr = require("cryptr");
-// const cryptr = new Cryptr(config.cryptrSecret);
+const cors = require('cors');
 
 // Config the Express App
 // app.use(express.static('public'))
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
-const {auth} = usersService
+const { auth } = usersService;
 
-app.post("/api/user/login", async (req, res) => {
+app.post('/api/user/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const userToken = await usersService.login(username, password);
-    // if (!foundUser) res.status(404).send("User not Found");
-    res.cookie("loginInfo", userToken);
-    res.send("Login Success");
+    console.log('userToken', userToken);
+    // res.cookie('loginInfo', userToken);
+    res.cookie('loginInfo', userToken, {
+      expires: new Date(Date.now() + 9999999),
+      httpOnly: false,
+      sameSite: 'strict',
+    });
+    res.send('Login Success');
   } catch (err) {
-    res.send(err.message);
+    res.status(404).send(err.message);
   }
 });
 
-app.get("/api/user/logout", (req, res) => {
-  res.clearCookie("loginInfo").send("Logged Out");
+app.get('/api/user/logout', (req, res) => {
+  res.clearCookie('loginInfo').send('Logged Out');
 });
 
-app.get("/api/posts", (req, res) => {
-  const filterBy = { userId: req.query.userId || "" };
+app.get('/api/posts', (req, res) => {
+  const filterBy = { userId: req.query.userId || '' };
   postService.query(filterBy).then((posts) => res.send(posts));
 });
 
-app.post("/api/posts/:postId", (req, res) => {
+app.post('/api/posts/:postId', (req, res) => {
   const { postId } = req.params;
   const comment = req.body;
   // const { userId } = req.cookies;
@@ -52,11 +63,14 @@ app.post("/api/posts/:postId", (req, res) => {
       res.status(502).send(err);
     });
 });
-app.post("/api/posts/:postId/like", auth,(req, res) => {
+app.post('/api/posts/:postId/like', auth, (req, res) => {
   // const { postId } = req.params;
   const { postId } = req.body;
+  // console.log('postId', postId);
+  console.log('cookies', req.cookies);
   // const { userId } = req.cookies;
   // if (!userId) return res.status(401).send('Cannot add car')
+  console.log('req.user', req.user);
   const { user } = req;
   postService
     .likePost({
@@ -65,7 +79,7 @@ app.post("/api/posts/:postId/like", auth,(req, res) => {
         _id: user._id,
         fullname: user.name,
         imgUrl: user.profilePic,
-      }
+      },
     })
     .then((likeStatus) => {
       res.send(likeStatus);
@@ -75,7 +89,7 @@ app.post("/api/posts/:postId/like", auth,(req, res) => {
     });
 });
 
-app.delete("/api/posts/:postId/:commentId", (req, res) => {
+app.delete('/api/posts/:postId/:commentId', (req, res) => {
   const { postId } = req.params;
   const { commentId } = req.params;
   // const { userId } = req.cookies;
@@ -100,7 +114,7 @@ app.delete("/api/posts/:postId/:commentId", (req, res) => {
 //         })
 // })
 
-app.get("/api/posts/:postId", (req, res) => {
+app.get('/api/posts/:postId', (req, res) => {
   const { postId } = req.params;
   postService.getById(postId).then((post) => {
     res.send(post);
@@ -117,4 +131,4 @@ app.get("/api/posts/:postId", (req, res) => {
 // })
 
 app.listen(3030);
-console.log("Server is ready at 3030");
+console.log('Server is ready at 3030');

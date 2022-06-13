@@ -1,5 +1,5 @@
-const fs = require("fs");
 const gUsers = require("../data/users.json");
+const cookieParser = require("cookie-parser");
 const config = require("../config");
 const Cryptr = require("cryptr");
 const cryptr = new Cryptr(config.cryptrSecret);
@@ -11,8 +11,10 @@ module.exports = {
 
 async function login(username, password) {
   try {
+    console.log('username', username);
+    console.log('password', password);
     const user = await gUsers.find(
-      (user) => user.username === username && user.password === password
+      (user) => user.username === username && +user.password === +password
     );
     if (!user) throw new Error("user not found");
     const encryptedUserToker = cryptr.encrypt(user);
@@ -25,7 +27,10 @@ async function login(username, password) {
 //MIDDLEWARES
 
 async function auth(req, res, next) {
+  console.log('req.cookies', req.cookie);
+  // console.log('req', req);
   try {
+  
     const { userInfo } = req.cookie;
     const { username, password } = cryptr.decrypt(userInfo);
     const user = await gUsers.find(
