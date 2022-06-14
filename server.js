@@ -27,14 +27,10 @@ app.post('/api/user/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const userToken = await usersService.login(username, password);
-    console.log('userToken', userToken);
+    // console.log('userToken', userToken);
     // res.cookie('loginInfo', userToken);
-    res.cookie('loginInfo', userToken, {
-      expires: new Date(Date.now() + 9999999),
-      httpOnly: false,
-      sameSite: 'strict',
-    });
-    res.send('Login Success');
+    res.cookie('loginInfo', userToken.encryptedUserToker);
+    res.send({ username: userToken.user.username, _id: userToken.user._id });
   } catch (err) {
     res.status(404).send(err.message);
   }
@@ -49,28 +45,48 @@ app.get('/api/posts', (req, res) => {
   postService.query(filterBy).then((posts) => res.send(posts));
 });
 
-app.post('/api/posts/:postId', (req, res) => {
-  const { postId } = req.params;
-  const comment = req.body;
+app.post('/api/posts/:postId', auth, (req, res) => {
+  // const { postId } = req.params;
+  const { postId, commentTxt, commentId } = req.body;
+  const { user } = req;
   // const { userId } = req.cookies;
   // if (!userId) return res.status(401).send('Cannot add car')
   postService
-    .addComment(postId, comment)
-    .then((addedComment) => {
-      res.send(addedComment);
+    .addComment({
+      postId,
+      comment: {
+        id: commentId,
+        by: {
+          _id: user._id,
+          fullname: user.name,
+          imgUrl: user.profilePic,
+        },
+        txt: commentTxt,
+        likedBy: [],
+      },
+    })
+    .then((postCommentsInfo) => {
+      console.log('addedComment', postCommentsInfo);
+      res.send(postCommentsInfo);
     })
     .catch((err) => {
       res.status(502).send(err);
     });
+  // postService
+  //   .addComment(postId, comment)
+  //   .then((addedComment) => {
+  //     res.send(addedComment);
+  //   })
+  //   .catch((err) => {
+  //     res.status(502).send(err);
+  //   });
 });
 app.post('/api/posts/:postId/like', auth, (req, res) => {
-  // const { postId } = req.params;
-  const { postId } = req.body;
+  const { postId } = req.params;
+  // const { postId } = req.body;
   // console.log('postId', postId);
-  console.log('cookies', req.cookies);
   // const { userId } = req.cookies;
   // if (!userId) return res.status(401).send('Cannot add car')
-  console.log('req.user', req.user);
   const { user } = req;
   postService
     .likePost({
@@ -82,6 +98,7 @@ app.post('/api/posts/:postId/like', auth, (req, res) => {
       },
     })
     .then((likeStatus) => {
+      console.log('likeStatus', likeStatus);
       res.send(likeStatus);
     })
     .catch((err) => {
