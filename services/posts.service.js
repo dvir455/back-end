@@ -23,19 +23,21 @@ function addComment(request) {
   const post = gPosts.find((post) => post._id == postId);
   if (!post) return Promise.reject('Post not found');
   post.comments.push(comment);
-  return Promise.resolve({ postId, postComments:post.comments });
+  return Promise.resolve({ postId, postComments: post.comments });
 }
 
-function deleteComment(postId, commentId) {
+function deleteComment(postId, commentId, user) {
   const post = gPosts.find((post) => post._id == postId);
   if (!post) return Promise.reject('Post not found');
   const commentIdx = post.comments.findIndex(
     (comment) => comment.id == commentId
   );
   if (commentIdx < 0) return Promise.reject('Comment not found');
-  // console.log('comment', comment);
+  if (post.comments[commentIdx].by._id != user._id) {
+    return Promise.reject('You are not authorized to delete this comment');
+  }
   post.comments.splice(commentIdx, 1);
-  return Promise.resolve({ postId, commentIdx });
+  return Promise.resolve({ postId, commentIdx, postComments: post.comments });
 }
 
 function likePost(request) {

@@ -2,23 +2,15 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const postService = require('./services/posts.service');
 const usersService = require('./services/users.service');
-const corsOptions = {
-  origin: [
-    'http://127.0.0.1:3030',
-    'http://localhost:3030',
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-  ],
-  credentials: true,
-};
-// const config = require("./config.js");
+const config = require('./config.js');
+
 const app = express();
 const cors = require('cors');
 
 // Config the Express App
 // app.use(express.static('public'))
 app.use(express.json());
-app.use(cors(corsOptions));
+app.use(cors(config.corsOptions));
 app.use(cookieParser());
 
 const { auth } = usersService;
@@ -45,12 +37,9 @@ app.get('/api/posts', (req, res) => {
   postService.query(filterBy).then((posts) => res.send(posts));
 });
 
-app.post('/api/posts/:postId', auth, (req, res) => {
-  // const { postId } = req.params;
+app.post('/api/posts', auth, (req, res) => {
   const { postId, commentTxt, commentId } = req.body;
   const { user } = req;
-  // const { userId } = req.cookies;
-  // if (!userId) return res.status(401).send('Cannot add car')
   postService
     .addComment({
       postId,
@@ -72,18 +61,9 @@ app.post('/api/posts/:postId', auth, (req, res) => {
     .catch((err) => {
       res.status(502).send(err);
     });
-  // postService
-  //   .addComment(postId, comment)
-  //   .then((addedComment) => {
-  //     res.send(addedComment);
-  //   })
-  //   .catch((err) => {
-  //     res.status(502).send(err);
-  //   });
 });
 app.post('/api/posts/:postId/like', auth, (req, res) => {
   const { postId } = req.params;
-  // const { postId } = req.body;
   // console.log('postId', postId);
   // const { userId } = req.cookies;
   // if (!userId) return res.status(401).send('Cannot add car')
@@ -106,18 +86,16 @@ app.post('/api/posts/:postId/like', auth, (req, res) => {
     });
 });
 
-app.delete('/api/posts/:postId/:commentId', (req, res) => {
-  const { postId } = req.params;
-  const { commentId } = req.params;
-  // const { userId } = req.cookies;
-  // if (!userId) return res.status(401).send('Cannot add car')
+app.delete('/api/posts/:postId/:commentId', auth, (req, res) => {
+  const { postId, commentId } = req.params;
+  const { user } = req;
   postService
-    .deleteComment(postId, commentId)
-    .then((deletedComment) => {
-      res.send(deletedComment);
+    .deleteComment(postId, commentId, user)
+    .then((deletedCommentInfo) => {
+      res.send(deletedCommentInfo);
     })
     .catch((err) => {
-      res.send(err);
+      res.status(401).send(err);
     });
 });
 
@@ -137,15 +115,6 @@ app.get('/api/posts/:postId', (req, res) => {
     res.send(post);
   });
 });
-
-// app.get('/api/car/:carId/remove', (req, res) => {
-//     const {carId} = req.params
-//     carService.remove(carId)
-//         .then(() => {
-//             console.log('Removed Car', carId)
-//             res.send('Removed Succesfully')
-//         })
-// })
 
 app.listen(3030);
 console.log('Server is ready at 3030');

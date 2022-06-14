@@ -20,7 +20,7 @@ async function login(username, password) {
     // console.log('user', user);
     const userStringify = JSON.stringify(user);
     const encryptedUserToker = cryptr.encrypt(userStringify);
-    return {user,encryptedUserToker};
+    return { user, encryptedUserToker };
   } catch (err) {
     throw new Error(err.message);
   }
@@ -32,16 +32,14 @@ async function auth(req, res, next) {
   try {
     const { loginInfo } = req.cookies;
     const { username, password } = JSON.parse(cryptr.decrypt(loginInfo));
-    // console.log('userInfo', userInfo);
     const user = gUsers.find(
       (currUser) =>
         currUser.username === username && currUser.password === password
     );
     if (!user) throw new Error('user not found');
     req.user = user;
-    next()
+    next();
   } catch (err) {
-    // console.log('err', err);
     res.send(err.message);
   }
 }
