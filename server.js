@@ -32,6 +32,12 @@ app.get('/api/user/logout', (req, res) => {
   res.clearCookie('loginInfo').send('Logged Out');
 });
 
+app.get('/api/user/checkLoggon', auth, (req, res) => {
+  // if (req.user) {
+  res.send({ username: req.user.username, _id: req.user._id });
+  // }
+});
+
 app.get('/api/posts', (req, res) => {
   const filterBy = { userId: req.query.userId || '' };
   postService.query(filterBy).then((posts) => res.send(posts));

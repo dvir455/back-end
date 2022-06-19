@@ -31,6 +31,7 @@ async function login(username, password) {
 async function auth(req, res, next) {
   try {
     const { loginInfo } = req.cookies;
+    if (!loginInfo) throw new Error('user not logged in');
     const { username, password } = JSON.parse(cryptr.decrypt(loginInfo));
     const user = gUsers.find(
       (currUser) =>
@@ -40,6 +41,6 @@ async function auth(req, res, next) {
     req.user = user;
     next();
   } catch (err) {
-    res.send(err.message);
+    res.status(401).send(err.message);
   }
 }
