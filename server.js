@@ -8,7 +8,6 @@ const app = express();
 const cors = require('cors');
 
 // Config the Express App
-// app.use(express.static('public'))
 app.use(express.json());
 app.use(cors(config.corsOptions));
 app.use(cookieParser());
@@ -19,10 +18,22 @@ app.post('/api/user/login', async (req, res) => {
   const { username, password } = req.body;
   try {
     const userToken = await usersService.login(username, password);
-    // console.log('userToken', userToken);
-    // res.cookie('loginInfo', userToken);
     res.cookie('loginInfo', userToken.encryptedUserToker);
-    res.send({ username: userToken.user.username, _id: userToken.user._id });
+    res.send({
+      username: userToken.user.username,
+      _id: userToken.user._id,
+      profilePic: userToken.user.profilePic,
+    });
+  } catch (err) {
+    res.status(404).send(err.message);
+  }
+});
+
+app.post('/api/user/signup', async (req, res) => {
+  const { email, fullname, username, password } = req.body;
+  try {
+    const user = await usersService.signup(email, fullname, username, password);
+    res.send(user);
   } catch (err) {
     res.status(404).send(err.message);
   }
