@@ -1,5 +1,4 @@
 const gUsers = require('../data/users.json');
-const cookieParser = require('cookie-parser');
 const config = require('../config');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr(config.cryptrSecret);
@@ -8,19 +7,53 @@ module.exports = {
   login,
   auth,
   signup,
+  userQuery,
+  usersQuery,
 };
 
 async function login(username, password) {
   try {
-    // console.log('username', username);
-    // console.log('password', password);
     const user = await gUsers.find(
-      (user) => user.username === username && +user.password === +password
+      (user) =>
+        user.username === username && user.password + '' === password + ''
     );
     if (!user) throw new Error('user not found');
     const userStringify = JSON.stringify(user);
     const encryptedUserToker = cryptr.encrypt(userStringify);
     return { user, encryptedUserToker };
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}
+
+async function userQuery(userName) {
+  console.log(userName);
+  try {
+    const user = gUsers.find((currUser) => {
+      return currUser.username === userName;
+    });
+    if (!user) throw new Error('user not found');
+    return user;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}
+async function usersQuery(searchValue) {
+  console.log('searchValue', searchValue);
+  try {
+    const users = gUsers.filter((currUser) => {
+      return currUser.username.includes(searchValue);
+    });
+    if (!users.length) throw new Error('users not found');
+    const basicUsers = users.map((user) => {
+      return {
+        userName: user.username,
+        profilePic: user.profilePic,
+        _id: user._id,
+        bio: user.bio,
+      };
+    });
+    return basicUsers;
   } catch (err) {
     throw new Error(err.message);
   }
@@ -36,7 +69,7 @@ async function signup(email, fullname, username, password) {
       username: username,
       password: password,
       email: email,
-      _id: makeid(),
+      _id: makeId(),
       createdAt: Date.now(),
       birth: '',
       following: {},
@@ -72,7 +105,7 @@ async function auth(req, res, next) {
   }
 }
 
-function makeid(length = 5) {
+function makeId(length = 5) {
   let text = '';
   const possible =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

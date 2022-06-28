@@ -71,7 +71,7 @@
     "imgUrl": "two",
     "createdAt": 123543452,
     "by": {
-      "_id": "u102",
+      "_id": "u101",
       "fullname": "Dvir Yomtovian",
       "imgUrl": "./images/by.jpg"
     },

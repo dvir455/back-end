@@ -10,6 +10,22 @@
     "followedBy": {},
     "name": "Dvir Yomtovian",
     "bio": "Nothing interesting here",
-    "profilePic": "url"
+    "profilePic": "https://media.istockphoto.com/photos/portrait-of-small-girl-in-living-room-at-home-picture-id1352096257?b=1&k=20&m=1352096257&s=170667a&w=0&h=pxFX9aF1TREb1bnF9jJIJlfioIHpEOjo92wi5sYIg5w="
+  },
+  {
+    "username": "admin",
+    "password": "admin",
+    "email": "theddsavirr@gmail.com",
+    "_id": 9595,
+    "createdAt": 51161561,
+    "birth": 2595656,
+    "following": [
+      "u101",
+      "u103"
+    ],
+    "followedBy": [],
+    "name": "admin admin",
+    "bio": "Nothing interesting here",
+    "profilePic": "https://campaignforkids.com/wp-content/uploads/2015/03/freekid-1024x768.jpg"
   }
 ]

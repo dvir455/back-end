@@ -12,9 +12,13 @@ module.exports = {
 };
 
 function query(filterBy) {
-  const userId = filterBy.userId;
-  if (!userId) return Promise.resolve(gPosts);
-  posts = gPosts.filter((post) => post.by._id == userId);
+  console.log('filterBy', filterBy);
+  if (!filterBy.following.length) return Promise.resolve([]);
+  posts = gPosts.filter((post) => {
+    console.log('post', post.by._id);
+    if (filterBy.following.includes(post.by._id)) return post;
+  });
+  console.log('posts', posts);
   return Promise.resolve(posts);
 }
 

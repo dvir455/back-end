@@ -42,6 +42,26 @@ app.post('/api/user/signup', async (req, res) => {
 app.get('/api/user/logout', (req, res) => {
   res.clearCookie('loginInfo').send('Logged Out');
 });
+app.get('/api/user/query', auth, (req, res) => {
+  const { userName } = req.query;
+  const { searchValue } = req.query;
+  userName
+    ? usersService
+        .userQuery(userName)
+        .then((user) =>
+          res.send({
+            userName: user.username,
+            _id: user._id,
+            profilePic: user.profilePic,
+            bio: user.bio,
+          })
+        )
+        .catch((err) => res.status(404).send(err.message))
+    : usersService
+        .usersQuery(searchValue)
+        .then((users) => res.send(users))
+        .catch((err) => res.status(404).send(err.message));
+});
 
 app.get('/api/user/checkLoggon', auth, (req, res) => {
   // if (req.user) {
@@ -49,9 +69,10 @@ app.get('/api/user/checkLoggon', auth, (req, res) => {
   // }
 });
 
-app.get('/api/posts', (req, res) => {
-  const filterBy = { userId: req.query.userId || '' };
-  postService.query(filterBy).then((posts) => res.send(posts));
+app.get('/api/posts', auth, (req, res) => {
+  // const filterBy = { userId: req.query.userId || '' };
+
+  postService.query(req.user).then((posts) => res.send(posts));
 });
 
 app.post('/api/posts', auth, (req, res) => {
